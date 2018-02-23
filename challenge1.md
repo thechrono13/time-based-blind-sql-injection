@@ -4,11 +4,11 @@ python time_based_blind_sql_injection.py http://192.168.33.10/sqli/time_based_bl
 
 
 
-# Starting attack on URL: http://192.168.33.10/sqli/time_based_blind.php #
+Starting attack on URL: http://192.168.33.10/sqli/time_based_blind.php
 
-# Using 4 thread #
-# Average response time: 0.0122010510204 s #
-# Using sleep time: 0.122010510204 s #
+Using 4 thread
+Average response time: 0.0122010510204 s
+Using sleep time: 0.122010510204 s
 
 
 Determinating number of rows of table: SCHEMATA
