@@ -1,6 +1,6 @@
 # Time Based Blind SQL Injection Tool
 
-```shell
+```shell-script
 python time_based_blind_sql_injection.py http://192.168.33.10/sqli/time_based_blind.php GET [\'email\'] [\'arthur@guide.com\'] -t 4 -l
 ```
 
