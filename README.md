@@ -8,10 +8,10 @@ Once found, the tool ask the user to select a database and a table to dump, afte
 usage: time_based_blind_sql_injection.py [-h] [-s SLEEP] [-t THREADS] [-v] [-l] <url> <GET|POST> <fields> <values>
 
 positional arguments:
-   <url>                 The URL on which try the attack.
-   <GET|POST>            The method [GET|POST]
-   <fields>              The fields: ['field1','field2','field3'],...
-   <values>              The values: ['value1','value2','value3'],...
+  <url>                 The URL on which try the attack.
+  <GET|POST>            The method [GET|POST]
+  <fields>              The fields: ['field1','field2','field3'],...
+  <values>              The values: ['value1','value2','value3'],...
 
 optional arguments:
   -h, --help            show this help message and exit
