@@ -1,7 +1,7 @@
 # Time Based Blind SQL Injection Tool
-
+```bash
 python time_based_blind_sql_injection.py http://192.168.33.10/sqli/time_based_blind.php GET [\'email\'] [\'arthur@guide.com\'] -t 4 -l
-
+```
 
 
 Starting attack on URL: http://192.168.33.10/sqli/time_based_blind.php
