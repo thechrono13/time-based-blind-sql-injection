@@ -1,14 +1,12 @@
-
-
+# Author: Alessio Gilardi
+# Title: Time Based Blind SQL Injection Tool
 
 # The tool takes in input an URL, a method, a list of possibly vulnerable fields and a list of valid values for the respctive fields.
 # Once found, the tool ask the user to select a database and a table to dump, after it prints the results.
 
 # Usage: time_based_sql_injection.py <URL> <METHOD [GET|POST]> <fields ['field1', 'field2']> <values ['value1', 'value2']>
 
-
-
-import requests, sys, ast, binascii, argparse, threading#, winsound
+import requests, sys, ast, binascii, argparse, threading
 
 METHODS = ['GET', 'POST']
 M_GET = 0
