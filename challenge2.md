@@ -5383,10 +5383,11 @@ Determinating values of field: password
 
 Value: 0c38530eaca4dbc0f49c459c0c52b362f14215c3
 ```
-
+```
 Result of dump of accounts:
 
 {'password': 'd00ee262cdcbe7543210bb85f6f1cac257b4e994', 'first_name': 'Arthur', 'last_name': 'Dent', 'id': '1', 'email': 'arthur@guide.com'}
 {'password': '30f5cc99c17426a0d28acf8905c6d776039ad022', 'first_name': 'Ford', 'last_name': 'Prefect', 'id': '2', 'email': 'ford@guide.com'}
 {'password': 'bcb3358e273b5772ee0ae1799b612e13cc726b04', 'first_name': 'Tricia', 'last_name': 'McMillan', 'id': '3', 'email': 'tricia@guide.com'}
 {'password': '0c38530eaca4dbc0f49c459c0c52b362f14215c3', 'first_name': 'Zaphod', 'last_name': 'Beeblebrox', 'id': '4', 'email': 'zaphod@guide.com'}
+```
