@@ -6,8 +6,8 @@ The tool takes in input an URL, a method, a list of possibly vulnerable fields a
 Once found, the tool ask the user to select a database and a table to dump, after it prints the results.
 
 ```
-usage: time_based_blind_sql_injection.py [-h] [-s SLEEP] [-t THREADS] [-v] [-l] <url> <GET|POST> <fields> <values>
-
+usage: time_based_blind_sql_injection.py [-h] [-u URL] [-d {'<field>': '<value>',...}] [-m <GET|POST>] [-s SLEEP] [-t THREADS] [-v] [-l]
+  
 positional arguments:
   <url>                 The URL on which try the attack.
   <GET|POST>            The method [GET|POST]
