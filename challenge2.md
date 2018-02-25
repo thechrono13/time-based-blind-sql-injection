@@ -1,4 +1,4 @@
-#Time Based Blind SQL Injection Tool
+# Time Based Blind SQL Injection Tool
 
 
 * Starting attack on URL: http://192.168.33.10/sqli/time_based_blind_escaped.php
