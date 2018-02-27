@@ -175,7 +175,6 @@ def find_vuln_fields(url, method, headers, cookies, data, sleep_time):
     for field in m_data:
         m_data[field] = data[field] + sql.format('\'', sleep_time, SQL_SUFFIX_TYPE[COMMENT_SUFF])
         elapsed = measure_request_time(url, method, headers, cookies, m_data)
-        # m_data[field] = data[field]
     if elapsed >= sleep_time:
         vuln_fields.update({field:COMMENT_SUFF})
     for field in vuln_fields:
