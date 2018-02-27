@@ -388,7 +388,6 @@ def find_data(url, method, headers, cookies, data, vuln_field, vuln_type, db_nam
     result = find_data_val_binary(url, method, headers, cookies, data, vuln_field, vuln_type, db_name, table_name, column_name, length, sleep_time, limit_row , where_param, where_value)
     return result
 
-
 def main(argv):
     global M_GET, M_POST, threads_num, verbose, log, INFORMATION_SCHEMA_DB_NAME, INF_SCHEMA_SCHEMATA, INF_SCHEMA_SCHEMATA_SCHEMA_NAME, INF_SCHEMA_TABLES, INF_SCHEMA_TABLES_TABLE_SCHEMA, INF_SCHEMA_TABLES_TABLE_NAME, INF_SCHEMA_COLUMNS, INF_SCHEMA_COLUMNS_TABLE_NAME, INF_SCHEMA_COLUMNS_COLUMN_NAME
 
